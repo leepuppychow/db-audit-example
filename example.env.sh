@@ -1,0 +1,5 @@
+export DB_USER=""
+export DB_PASSWORD=""
+export DB_TRANSACTIONAL_NAME=""
+export DB_AUDIT_NAME=""
+export DB_HOST="localhost"
