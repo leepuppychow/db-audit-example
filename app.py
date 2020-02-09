@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, render_template, request, redirect, url_for
+from flask import Flask, jsonify, render_template, request, redirect, url_for, abort
 import psycopg2
 
 db_host = os.environ.get('DB_HOST')
@@ -37,7 +37,8 @@ def home():
     dogs = [{'id': row[0], 'name': row[1]} for row in rows]
     return render_template('home.html', dogs=dogs)
   except Exception as err:
-    return f"Error: {str(err)}", 500
+    print(err)
+    abort(500)
 
 @app.route("/dog", methods=['POST'])
 def create_dog():
@@ -48,7 +49,8 @@ def create_dog():
       transactional_conn.commit()
     return redirect(url_for("home"))
   except Exception as err:
-    return f"Error: {str(err)}", 500
+    print(err)
+    abort(500)
 
 @app.route("/audit")
 def all_audits():
