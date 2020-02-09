@@ -35,7 +35,20 @@ def home():
     transactional_cur.execute("SELECT * FROM dog")
     rows = transactional_cur.fetchall()
     dogs = [{'id': row[0], 'name': row[1]} for row in rows]
-    return render_template('home.html', dogs=dogs)
+
+    audit_cur.execute("SELECT * FROM audit")
+    rows = audit_cur.fetchall()
+    audits = [{
+      'id': row[0],
+      'action': row[1],
+      'query': row[2],
+      'schema': row[3],
+      'old_data': row[4],
+      'new_data': row[5],
+      'table_name': row[6],
+    } for row in rows]
+
+    return render_template('home.html', dogs=dogs, audits=audits)
   except Exception as err:
     print(err)
     abort(500)
@@ -51,25 +64,6 @@ def create_dog():
   except Exception as err:
     print(err)
     abort(500)
-
-@app.route("/audit")
-def all_audits():
-  try:
-    audit_cur.execute("SELECT * FROM audit")
-    rows = audit_cur.fetchall()
-    audits = [{
-      'id': row[0],
-      'action': row[1],
-      'query': row[2],
-      'schema': row[3],
-      'old_data': row[4],
-      'new_data': row[5],
-      'table_name': row[6],
-    } for row in rows]
-    return jsonify(audits), 200
-  except Exception as err:
-    return f"Error: {str(err)}", 500
-
 
 if __name__ == '__main__':
   app.run(host="0.0.0.0", port=5000)
