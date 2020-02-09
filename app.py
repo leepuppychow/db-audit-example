@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template, request, redirect, url_for
 import psycopg2
 
 db_host = os.environ.get('DB_HOST')
@@ -30,12 +30,23 @@ def ping():
   return jsonify({'message': 'yay'})
 
 @app.route("/dog")
-def all_dogs():
+def home():
   try:
     transactional_cur.execute("SELECT * FROM dog")
     rows = transactional_cur.fetchall()
     dogs = [{'id': row[0], 'name': row[1]} for row in rows]
-    return jsonify(dogs), 200
+    return render_template('home.html', dogs=dogs)
+  except Exception as err:
+    return f"Error: {str(err)}", 500
+
+@app.route("/dog", methods=['POST'])
+def create_dog():
+  dog_name = request.form.get('dog_name')
+  try:
+    if dog_name:
+      transactional_cur.execute("INSERT INTO dog (name) values (%s)", (dog_name,))
+      transactional_conn.commit()
+    return redirect(url_for("home"))
   except Exception as err:
     return f"Error: {str(err)}", 500
 

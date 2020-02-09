@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello Dogs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style type="text/css"> 
+      .container {
+        max-width: 500px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Hello Dogs</h1>
+      <h2>Current Dogs:</h2>
+      <ul>
+        {% for dog in dogs %}
+          <li>{{ dog.name }}</li>
+        {% endfor %}
+      </ul>
+      <h2>Add a Dog:</h2>
+      <form action="/dog" method="POST">
+        <label>Dog's Name:</label>
+        <input type="text" name="dog_name">
+        <input type="submit" value="Submit">
+      </form>
+    </div>
+  </body>
+</html>
