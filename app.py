@@ -71,7 +71,7 @@ def create_dog():
         "old_data": {},
         "new_data": {"name": dog_name},
       })
-        producer.send('audit', bytes(kafka_message, 'ascii')) # This sends an "audit" topic to the Kafka server
+      producer.send('audit', bytes(kafka_message, 'ascii')) # This sends an "audit" topic to the Kafka server
     return redirect(url_for("home"))
   except Exception as err:
     print(err)
