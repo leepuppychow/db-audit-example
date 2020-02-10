@@ -1,27 +1,31 @@
-import os
+import os, json
 from flask import Flask, jsonify, render_template, request, redirect, url_for, abort
 import psycopg2
+from kafka import KafkaProducer
 
-db_host = os.environ.get('DB_HOST')
+host = os.environ.get('HOST')
 db_user = os.environ.get('DB_USER')
 db_password = os.environ.get('DB_PASSWORD')
 db_transactional_name = os.environ.get('DB_TRANSACTIONAL_NAME')
 db_audit_name = os.environ.get('DB_AUDIT_NAME')
+kafka_server_port = os.environ.get('KAFKA_SERVER_PORT')
 
 transactional_conn = psycopg2.connect(
   dbname=db_transactional_name,
   user=db_user,
   password=db_password,
-  host=db_host
+  host=host
 )
 transactional_cur = transactional_conn.cursor()
 audit_conn = psycopg2.connect(
   dbname=db_audit_name,
   user=db_user,
   password=db_password,
-  host=db_host
+  host=host
 )
 audit_cur = audit_conn.cursor()
+
+producer = KafkaProducer(bootstrap_servers=f"{host}:{kafka_server_port}")
 
 app = Flask(__name__)
 
@@ -41,11 +45,10 @@ def home():
     audits = [{
       'id': row[0],
       'action': row[1],
-      'query': row[2],
-      'schema': row[3],
-      'old_data': row[4],
-      'new_data': row[5],
-      'table_name': row[6],
+      'schema': row[2],
+      'old_data': row[3],
+      'new_data': row[4],
+      'table_name': row[5],
     } for row in rows]
 
     return render_template('home.html', dogs=dogs, audits=audits)
@@ -60,6 +63,15 @@ def create_dog():
     if dog_name:
       transactional_cur.execute("INSERT INTO dog (name) values (%s)", (dog_name,))
       transactional_conn.commit()
+
+      kafka_message = json.dumps({
+        "action": "INSERT",
+        "schema": "",
+        "table_name": "dog",
+        "old_data": {},
+        "new_data": {"name": dog_name},
+      })
+      producer.send('audit', bytes(kafka_message, 'ascii')) # This sends an "audit" topic to the Kafka server
     return redirect(url_for("home"))
   except Exception as err:
     print(err)
