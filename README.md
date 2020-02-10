@@ -1,3 +1,5 @@
+## Exploration with Kafka and creating audit logs for transactional DB
+
 ## Resources
 
 * [Install kafka on MacOS with homebrew](https://medium.com/@Ankitthakur/apache-kafka-installation-on-mac-using-homebrew-a367cdefd273)
